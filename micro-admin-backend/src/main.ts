@@ -14,6 +14,7 @@ async function bootstrap() {
       urls: [
         `amqp://${RMQ_USER}:${RMQ_PASSWORD}@3.15.222.109:5672/smartranking`,
       ],
+      noAck: false,
       queue: 'admin-backend',
     },
   });
