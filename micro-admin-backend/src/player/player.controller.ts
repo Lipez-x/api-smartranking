@@ -1,7 +1,5 @@
-import { Body, Controller, Injectable, Logger } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Controller, Logger } from '@nestjs/common';
 import { Player } from './interfaces/player.interface';
-import { InjectModel } from '@nestjs/mongoose';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { PlayerService } from './player.service';
 
@@ -15,8 +13,6 @@ export class PlayerController {
 
   @EventPattern('create-player')
   async createPlayer(@Payload() player: Player, @Ctx() context: RmqContext) {
-    console.log(player);
-
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
@@ -27,11 +23,13 @@ export class PlayerController {
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(error.message);
-      ackErrors.map(async (ackError) => {
-        if (error.message.includes(ackError)) {
-          await channel.ack(originalMsg);
-        }
-      });
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
     }
   }
 }

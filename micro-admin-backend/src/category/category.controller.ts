@@ -34,11 +34,13 @@ export class CategoryController {
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`);
-      ackErrors.map(async (ackError) => {
-        if (error.message.includes(ackError)) {
-          await channel.ack(originalMsg);
-        }
-      });
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
     }
   }
 
@@ -74,7 +76,13 @@ export class CategoryController {
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(JSON.stringify(error.message));
-      await channel.ack(originalMsg);
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
     }
   }
 }
