@@ -45,8 +45,8 @@ export class CategoryController {
   updateCategories(
     @Param('id', CategoryIdValidationPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Observable<any> {
-    return this.clientAdminBackend.emit('update-categories', {
+  ) {
+    this.clientAdminBackend.emit('update-categories', {
       id,
       updateCategoryDto,
     });

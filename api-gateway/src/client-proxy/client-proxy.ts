@@ -29,3 +29,4 @@ export class ClientProxyProvider {
     return this.clientAdminBackend;
   }
 }
+export { ClientProxy };
