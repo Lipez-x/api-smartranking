@@ -1,4 +1,4 @@
-import { Player } from '../../interfaces/players/player.interface';
+import { Player } from '../../player/interfaces/player.interface';
 
 export interface Category extends Document {
   readonly category: string;

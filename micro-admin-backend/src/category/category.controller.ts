@@ -8,7 +8,7 @@ import {
   MessagePattern,
 } from '@nestjs/microservices';
 import { AppController } from 'src/app.controller';
-import { updateCategoryPayload } from 'src/interfaces/update-category-payload';
+import { updateCategoryPayload } from 'src/category/interfaces/update-category-payload';
 import { Category } from './interfaces/category.interface';
 
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
