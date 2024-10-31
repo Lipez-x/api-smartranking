@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CategorySchema } from './interfaces/categories/category.schema';
+import { CategorySchema } from './category/interfaces/category.schema';
 import { PlayerSchema } from './interfaces/players/player.schema';
 import { ConfigModule } from '@nestjs/config';
+import { CategoryModule } from './category/category.module';
+import { PlayerModule } from './player/player.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { ConfigModule } from '@nestjs/config';
       { name: 'Category', schema: CategorySchema },
       { name: 'Player', schema: PlayerSchema },
     ]),
+    CategoryModule,
+    PlayerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

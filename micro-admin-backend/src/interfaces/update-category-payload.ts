@@ -1,4 +1,4 @@
-import { Category } from './categories/category.interface';
+import { Category } from '../category/interfaces/category.interface';
 
 export interface updateCategoryPayload {
   id: string;
