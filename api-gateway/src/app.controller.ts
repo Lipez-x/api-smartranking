@@ -28,13 +28,14 @@ export class AppController {
 
   RMQ_USER = process.env.RMQ_USER;
   RMQ_PASSWORD = process.env.RMQ_PASSWORD;
+  ADDRESS = process.env.ADDRESS;
 
   constructor() {
     this.clientAdminBackend = ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
         urls: [
-          `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@3.15.222.109:5672/smartranking`,
+          `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@${this.ADDRESS}/smartranking`,
         ],
         queue: 'admin-backend',
       },

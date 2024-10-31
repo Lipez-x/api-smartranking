@@ -35,7 +35,7 @@ export class AppService {
 
   async findCategoryById(category: string): Promise<Category> {
     const categoryExists = await this.categoryModel
-      .findById({
+      .findOne({
         category: category,
       })
       .populate('players')
@@ -53,13 +53,11 @@ export class AppService {
   }
 
   async updateCategory(id: string, category: Category): Promise<void> {
-    const categoryExists = await this.categoryModel.findById(id);
+    const categoryExists = await this.categoryModel.findOne({ category: id });
 
     if (!categoryExists) {
-      throw new RpcException('Categroy is not found');
+      throw new RpcException('Category is not found');
     }
-
-    this.logger.log(categoryExists);
 
     try {
       await this.categoryModel

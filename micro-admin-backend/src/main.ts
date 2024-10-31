@@ -5,15 +5,14 @@ import { Logger } from '@nestjs/common';
 
 const RMQ_USER = process.env.RMQ_USER;
 const RMQ_PASSWORD = process.env.RMQ_PASSWORD;
+const ADDRESS = process.env.ADDRESS;
 
 async function bootstrap() {
   const logger = new Logger('Main');
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: [
-        `amqp://${RMQ_USER}:${RMQ_PASSWORD}@3.15.222.109:5672/smartranking`,
-      ],
+      urls: [`amqp://${RMQ_USER}:${RMQ_PASSWORD}@${ADDRESS}/smartranking`],
       noAck: false,
       queue: 'admin-backend',
     },

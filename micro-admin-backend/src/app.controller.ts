@@ -10,7 +10,7 @@ import {
 import { Category } from './interfaces/categories/category.interface';
 import { updateCategoryPayload } from './interfaces/update-category-payload';
 
-const ackErrors: string[] = ['E11000'];
+const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
 
 @Controller()
 export class AppController {
@@ -42,19 +42,38 @@ export class AppController {
   }
 
   @MessagePattern('find-categories')
-  async findCategories(@Payload() id: string) {
-    if (id) {
-      return await this.appService.findCategoryById(id);
-    } else {
-      return await this.appService.findAllCategories();
+  async findCategories(@Payload() id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      if (id) {
+        return await this.appService.findCategoryById(id);
+      } else {
+        return await this.appService.findAllCategories();
+      }
+    } finally {
+      await channel.ack(originalMsg);
     }
   }
 
   @EventPattern('update-categories')
   async updateCategories(
     @Payload() { id, updateCategoryDto }: updateCategoryPayload,
+    @Ctx() context: RmqContext,
   ) {
-    this.logger.log(`Update category ${id} with ${updateCategoryDto}`);
-    await this.appService.updateCategory(id, updateCategoryDto);
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      this.logger.log(
+        JSON.stringify(`Update category ${id} with ${updateCategoryDto}`),
+      );
+      await this.appService.updateCategory(id, updateCategoryDto);
+      await channel.ack(originalMsg);
+    } catch (error) {
+      this.logger.error(JSON.stringify(error.message));
+      await channel.ack(originalMsg);
+    }
   }
 }
