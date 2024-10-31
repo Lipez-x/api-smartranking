@@ -67,7 +67,7 @@ export class AppController {
 
     try {
       this.logger.log(
-        JSON.stringify(`Update category ${id} with ${updateCategoryDto}`),
+        `Update category ${id} with ${JSON.stringify(updateCategoryDto)}`,
       );
       await this.appService.updateCategory(id, updateCategoryDto);
       await channel.ack(originalMsg);
