@@ -43,6 +43,7 @@ export class CategoryService {
     if (!categoryExists) {
       throw new RpcException('Category not found');
     }
+
     try {
       return categoryExists;
     } catch (error) {

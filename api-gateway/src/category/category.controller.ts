@@ -10,14 +10,8 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 import { AppController } from 'src/app.controller';
-import { CategoryIdValidationPipe } from 'src/common/pipes/category-id-validation.pipe';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
@@ -43,7 +37,7 @@ export class CategoryController {
   @Put('/:id')
   @UsePipes(ValidationPipe)
   updateCategories(
-    @Param('id', CategoryIdValidationPipe) id: string,
+    @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     this.clientAdminBackend.emit('update-categories', {

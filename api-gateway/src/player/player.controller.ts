@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
 import { CreatePlayerDto } from './dtos/create-player.dto';
-import { CategoryController } from 'src/category/category.controller';
 import { ObjectIdValidationPipe } from 'src/common/pipes/object-id-validation.pipe';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { Observable } from 'rxjs';
+import { CategoryValidationPipe } from 'src/common/pipes/category-validation.pipe';
 
 @Controller('api/v1/players')
 export class PlayerController {
@@ -27,7 +27,9 @@ export class PlayerController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  createPlayer(@Body() createPlayerDto: CreatePlayerDto) {
+  async createPlayer(
+    @Body(CategoryValidationPipe) createPlayerDto: CreatePlayerDto,
+  ) {
     this.clientAdminBackend.emit('create-player', createPlayerDto);
   }
 
@@ -40,7 +42,7 @@ export class PlayerController {
   @UsePipes(ValidationPipe)
   updatePlayer(
     @Param('id', ObjectIdValidationPipe) id: string,
-    @Body() updatePlayerDto: UpdatePlayerDto,
+    @Body(CategoryValidationPipe) updatePlayerDto: UpdatePlayerDto,
   ) {
     this.clientAdminBackend.emit('update-player', { id, updatePlayerDto });
   }
