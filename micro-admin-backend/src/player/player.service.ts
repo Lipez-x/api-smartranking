@@ -9,19 +9,34 @@ import {
   RpcException,
 } from '@nestjs/microservices';
 import { UpdatePlayerPayload } from './interfaces/update-player.payload';
+import { CreatePlayerPayload } from './interfaces/create-player.payload';
+import { CategoryService } from 'src/category/category.service';
 
 @Injectable()
 export class PlayerService {
   constructor(
     @InjectModel('Player') private readonly playerModel: Model<Player>,
+    private readonly categoryService: CategoryService,
   ) {}
 
   private logger = new Logger(PlayerService.name);
 
-  async createPlayer(player: Player) {
+  async createPlayer(createPlayerPayload: CreatePlayerPayload) {
+    const { categoryId, phoneNumber, email, name } = createPlayerPayload;
+
+    const category = await this.categoryService.findCategoryById(categoryId);
+
     try {
-      const createPlayer = new this.playerModel(player);
+      const createPlayer = new this.playerModel({
+        phoneNumber,
+        email,
+        name,
+      });
+
       await createPlayer.save();
+
+      category.players.push(createPlayer);
+      await this.categoryService.updateCategory(categoryId, category);
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);

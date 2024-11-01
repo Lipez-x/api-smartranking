@@ -9,6 +9,7 @@ import {
 } from '@nestjs/microservices';
 import { PlayerService } from './player.service';
 import { UpdatePlayerPayload } from './interfaces/update-player.payload';
+import { CreatePlayerPayload } from './interfaces/create-player.payload';
 
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
 
@@ -19,14 +20,17 @@ export class PlayerController {
   private logger = new Logger(PlayerController.name);
 
   @EventPattern('create-player')
-  async createPlayer(@Payload() player: Player, @Ctx() context: RmqContext) {
+  async createPlayer(
+    @Payload() createPlayerPayload: CreatePlayerPayload,
+    @Ctx() context: RmqContext,
+  ) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
-    this.logger.log(`Player: ${JSON.stringify(player)}`);
+    this.logger.log(`Player: ${JSON.stringify(createPlayerPayload)}`);
 
     try {
-      await this.playerService.createPlayer(player);
+      await this.playerService.createPlayer(createPlayerPayload);
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(error.message);
