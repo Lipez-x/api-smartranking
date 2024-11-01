@@ -3,9 +3,10 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class CreatePlayerDto {
   @IsNotEmpty()
   @IsString()
-  readonly category: string;
+  readonly categoryId: string;
   @IsNotEmpty()
   readonly phoneNumber: string;
+  @IsNotEmpty()
   @IsEmail()
   readonly email: string;
   @IsNotEmpty()

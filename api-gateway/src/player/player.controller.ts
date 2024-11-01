@@ -42,7 +42,7 @@ export class PlayerController {
     @Param('id', ObjectIdValidationPipe) id: string,
     @Body() updatePlayerDto: UpdatePlayerDto,
   ) {
-    this.clientAdminBackend.emit('update-player', updatePlayerDto);
+    this.clientAdminBackend.emit('update-player', { id, updatePlayerDto });
   }
 
   @Delete('/:id')
