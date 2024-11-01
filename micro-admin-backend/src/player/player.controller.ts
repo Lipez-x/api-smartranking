@@ -1,7 +1,14 @@
-import { Controller, Logger } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { Player } from './interfaces/player.interface';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { PlayerService } from './player.service';
+import { UpdatePlayerPayload } from './interfaces/update-player.payload';
 
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
 
@@ -23,6 +30,46 @@ export class PlayerController {
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(error.message);
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
+    }
+  }
+
+  @MessagePattern('get-players')
+  async findPlayers(@Payload() id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      if (id) {
+        return await this.playerService.findPlayerById(id);
+      } else {
+        return await this.playerService.findAllPlayers();
+      }
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
+
+  @EventPattern('update-player')
+  async updatePlayer(
+    @Payload() updatePlayerPayload: UpdatePlayerPayload,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.playerService.updatePlayer(updatePlayerPayload);
+      await channel.ack(originalMsg);
+    } catch (error) {
+      this.logger.error(error.message);
+
       const filterAckError = ackErrors.filter((ackError) =>
         error.message.includes(ackError),
       );
