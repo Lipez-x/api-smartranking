@@ -68,4 +68,19 @@ export class PlayerService {
       throw new RpcException(error.message);
     }
   }
+
+  async deletePlayer(id: string) {
+    const player = await this.playerModel.findById(id);
+
+    if (!player) {
+      throw new RpcException('Player not found');
+    }
+
+    try {
+      await this.playerModel.findByIdAndDelete(id);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new RpcException(error.message);
+    }
+  }
 }
