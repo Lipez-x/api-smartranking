@@ -6,5 +6,5 @@ export interface Player extends Document {
   name: string;
   ranking: string;
   rankingPosition: number;
-  urlImage: string;
+  urlImagePlayer: string;
 }

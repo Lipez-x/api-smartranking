@@ -70,10 +70,6 @@ export class PlayerService {
   async updatePlayer(updatePlayerPayload: UpdatePlayerPayload) {
     const { id, updatePlayerDto } = updatePlayerPayload;
 
-    const categoryExists = await this.categoryService.findCategoryById(
-      updatePlayerDto.categoryId,
-    );
-
     const player = await this.playerModel.findById(id);
 
     if (!player) {
@@ -81,42 +77,47 @@ export class PlayerService {
     }
 
     try {
+      if (updatePlayerDto.categoryId) {
+        const categoryExists = await this.categoryService.findCategoryById(
+          updatePlayerDto.categoryId,
+        );
+
+        const categoryPlayer =
+          await this.categoryService.findPlayerCategory(id);
+
+        if (!categoryPlayer) {
+          categoryExists.players.push(player);
+          await this.categoryService.updateCategory(
+            updatePlayerDto.categoryId,
+            categoryExists,
+          );
+        } else if (categoryPlayer.category !== categoryExists.category) {
+          const playerIndex = categoryPlayer.players.findIndex(
+            (p) => p == player.id,
+          );
+
+          if (playerIndex !== -1) {
+            categoryPlayer.players.splice(playerIndex, 1);
+          }
+
+          categoryExists.players.push(player);
+
+          await this.categoryService.updateCategory(
+            categoryPlayer.category,
+            categoryPlayer,
+          );
+
+          await this.categoryService.updateCategory(
+            updatePlayerDto.categoryId,
+            categoryExists,
+          );
+        }
+      }
+      console.log(updatePlayerDto);
+
       await this.playerModel
         .findByIdAndUpdate(id, { $set: updatePlayerDto })
         .exec();
-
-      const categoryPlayer = await this.categoryService.findPlayerCategory(id);
-
-      console.log(categoryPlayer.category);
-
-      if (!categoryPlayer) {
-        categoryExists.players.push(player);
-        await this.categoryService.updateCategory(
-          updatePlayerDto.categoryId,
-          categoryExists,
-        );
-      } else if (categoryPlayer.category !== categoryExists.category) {
-        const playerIndex = categoryPlayer.players.findIndex(
-          (p) => p == player.id,
-        );
-
-        if (playerIndex !== -1) {
-          categoryPlayer.players.splice(playerIndex, 1);
-          console.log('Tá funcionando isso');
-        }
-
-        categoryExists.players.push(player);
-
-        await this.categoryService.updateCategory(
-          categoryPlayer.category,
-          categoryPlayer,
-        );
-
-        await this.categoryService.updateCategory(
-          updatePlayerDto.categoryId,
-          categoryExists,
-        );
-      }
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
