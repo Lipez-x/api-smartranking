@@ -14,7 +14,7 @@ export class CategoryValidationPipe implements PipeTransform {
       .send('find-categories', value.categoryId)
       .pipe(
         catchError((error) => {
-          throw new BadRequestException('This category is not valid');
+          throw new BadRequestException(error.message);
         }),
       )
       .toPromise();

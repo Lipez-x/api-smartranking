@@ -8,6 +8,8 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -17,6 +19,8 @@ import { ObjectIdValidationPipe } from 'src/common/pipes/object-id-validation.pi
 import { UpdatePlayerDto } from './dtos/update-player.dto';
 import { Observable } from 'rxjs';
 import { CategoryValidationPipe } from 'src/common/pipes/category-validation.pipe';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AwsService } from 'src/aws/aws.service';
 
 @Controller('api/v1/players')
 export class PlayerController {
@@ -25,12 +29,21 @@ export class PlayerController {
   private clientProxy = new ClientProxyProvider();
   private clientAdminBackend = this.clientProxy.getClientAdminBackEnd;
 
+  constructor(private awsService: AwsService) {}
+
   @Post()
   @UsePipes(ValidationPipe)
   async createPlayer(
     @Body(CategoryValidationPipe) createPlayerDto: CreatePlayerDto,
   ) {
     this.clientAdminBackend.emit('create-player', createPlayerDto);
+  }
+
+  @Post('/:id/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImage(@UploadedFile() file, @Param('id') id: string) {
+    const data = await this.awsService.uploadFile(file, id);
+    return data;
   }
 
   @Get()
