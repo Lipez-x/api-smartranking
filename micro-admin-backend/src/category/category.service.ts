@@ -68,4 +68,19 @@ export class CategoryService {
       throw new RpcException(error.message);
     }
   }
+
+  async findPlayerCategory(id: any) {
+    try {
+      const category = await this.categoryModel
+        .findOne()
+        .where('players')
+        .in(id)
+        .exec();
+
+      return category;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new RpcException(error.message);
+    }
+  }
 }
