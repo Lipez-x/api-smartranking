@@ -6,10 +6,12 @@ export class AwsService {
   private logger = new Logger(AwsService.name);
   private S3_USER_ACCESS_KEY_ID = process.env.S3_USER_ACCESS_KEY_ID;
   private S3_USER_SECRET_ACCESS_KEY = process.env.S3_USER_SECRET_ACCESS_KEY;
+  private AWS_REGION = process.env.AWS_REGION;
+  private AWS_S3_BUCKET = process.env.AWS_S3_BUCKET;
 
   public async uploadFile(file: any, id: string) {
     const s3 = new AWS.S3({
-      region: 'us-east-2',
+      region: this.AWS_REGION,
       accessKeyId: this.S3_USER_ACCESS_KEY_ID,
       secretAccessKey: this.S3_USER_SECRET_ACCESS_KEY,
     });
@@ -30,9 +32,8 @@ export class AwsService {
       .promise()
       .then(
         (data) => {
-          // https://user-images-smartranking.s3.us-east-2.amazonaws.com/672b621e2445b8427892a1d0.jpeg
           return {
-            url: `https://user-images-smartranking.s3.us-east-2.amazonaws.com/${urlKey}`,
+            url: `https://${this.AWS_S3_BUCKET}.s3.${this.AWS_REGION}.amazonaws.com/${urlKey}`,
           };
         },
         (error) => {

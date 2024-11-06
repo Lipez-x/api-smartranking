@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -42,8 +43,25 @@ export class PlayerController {
   @Post('/:id/upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadImage(@UploadedFile() file, @Param('id') id: string) {
-    const data = await this.awsService.uploadFile(file, id);
-    return data;
+    const player = await this.clientAdminBackend
+      .send('get-players', id)
+      .toPromise();
+
+    if (!player) {
+      throw new BadRequestException('Player not found');
+    }
+
+    const urlImagePlayer = await this.awsService.uploadFile(file, id);
+
+    const updatePlayerDto: UpdatePlayerDto = {};
+    updatePlayerDto.urlImagePlayer = urlImagePlayer.url;
+
+    await this.clientAdminBackend.emit('update-player', {
+      id,
+      updatePlayerDto,
+    });
+
+    return this.clientAdminBackend.send('get-players', id);
   }
 
   @Get()
