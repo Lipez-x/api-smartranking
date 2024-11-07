@@ -31,7 +31,7 @@ export class ClientProxyProvider {
         urls: [
           `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@${this.ADDRESS}/smartranking`,
         ],
-        queue: 'challenge',
+        queue: 'challenges',
       },
     });
   }

@@ -41,7 +41,7 @@ export class PlayerService {
 
   async findAllPlayers() {
     try {
-      return await this.playerModel.find().populate('category').exec();
+      return await this.playerModel.find().exec();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
@@ -49,10 +49,7 @@ export class PlayerService {
   }
 
   async findPlayerById(id: string) {
-    const player = await this.playerModel
-      .findById(id)
-      .populate('category')
-      .exec();
+    const player = await this.playerModel.findById(id).exec();
 
     if (!player) {
       throw new RpcException('Player not found');
