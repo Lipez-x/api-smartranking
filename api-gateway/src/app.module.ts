@@ -6,6 +6,7 @@ import { PlayerModule } from './player/player.module';
 import { ClientProxyProvider } from './client-proxy/client-proxy';
 import { ClientProxyModule } from './client-proxy/client-proxy.module';
 import { AwsModule } from './aws/aws.module';
+import { ChallengeModule } from './challenge/challenge.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AwsModule } from './aws/aws.module';
     PlayerModule,
     ClientProxyModule,
     AwsModule,
+    ChallengeModule,
   ],
   controllers: [AppController],
   providers: [ClientProxyProvider],
