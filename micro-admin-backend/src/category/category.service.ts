@@ -32,11 +32,9 @@ export class CategoryService {
     }
   }
 
-  async findCategoryById(category: string): Promise<Category> {
+  async findCategoryById(id: string): Promise<Category> {
     const categoryExists = await this.categoryModel
-      .findOne({
-        category: category,
-      })
+      .findById(id)
       .populate('players')
       .exec();
 
@@ -53,16 +51,14 @@ export class CategoryService {
   }
 
   async updateCategory(id: string, category: Category): Promise<void> {
-    const categoryExists = await this.categoryModel.findOne({ category: id });
+    const categoryExists = await this.categoryModel.findById(id);
 
     if (!categoryExists) {
       throw new RpcException('Category is not found');
     }
 
     try {
-      await this.categoryModel
-        .findOneAndUpdate({ category: id }, { $set: category })
-        .exec();
+      await this.categoryModel.findByIdAndUpdate(id, { $set: category }).exec();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);

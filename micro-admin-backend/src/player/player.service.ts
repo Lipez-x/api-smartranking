@@ -2,12 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Player } from './interfaces/player.interface';
-import {
-  Ctx,
-  EventPattern,
-  RmqContext,
-  RpcException,
-} from '@nestjs/microservices';
+import { RpcException } from '@nestjs/microservices';
 import { UpdatePlayerPayload } from './interfaces/update-player.payload';
 import { CreatePlayerPayload } from './interfaces/create-player.payload';
 import { CategoryService } from 'src/category/category.service';
@@ -31,6 +26,7 @@ export class PlayerService {
         phoneNumber,
         email,
         name,
+        category: category.id,
       });
 
       await createPlayer.save();
@@ -45,7 +41,7 @@ export class PlayerService {
 
   async findAllPlayers() {
     try {
-      return await this.playerModel.find().exec();
+      return await this.playerModel.find().populate('category').exec();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
@@ -53,7 +49,10 @@ export class PlayerService {
   }
 
   async findPlayerById(id: string) {
-    const player = await this.playerModel.findById(id).exec();
+    const player = await this.playerModel
+      .findById(id)
+      .populate('category')
+      .exec();
 
     if (!player) {
       throw new RpcException('Player not found');
@@ -85,13 +84,15 @@ export class PlayerService {
         const categoryPlayer =
           await this.categoryService.findPlayerCategory(id);
 
+        console.log(categoryPlayer);
+
         if (!categoryPlayer) {
           categoryExists.players.push(player);
           await this.categoryService.updateCategory(
             updatePlayerDto.categoryId,
             categoryExists,
           );
-        } else if (categoryPlayer.category !== categoryExists.category) {
+        } else if (categoryPlayer.id !== categoryExists.id) {
           const playerIndex = categoryPlayer.players.findIndex(
             (p) => p == player.id,
           );
@@ -103,7 +104,7 @@ export class PlayerService {
           categoryExists.players.push(player);
 
           await this.categoryService.updateCategory(
-            categoryPlayer.category,
+            categoryPlayer.id,
             categoryPlayer,
           );
 
@@ -113,11 +114,8 @@ export class PlayerService {
           );
         }
       }
-      console.log(updatePlayerDto);
 
-      await this.playerModel
-        .findByIdAndUpdate(id, { $set: updatePlayerDto })
-        .exec();
+      await this.playerModel.findByIdAndUpdate(id, { updatePlayerDto }).exec();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
