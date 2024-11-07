@@ -112,7 +112,12 @@ export class PlayerService {
         }
       }
 
-      await this.playerModel.findByIdAndUpdate(id, { updatePlayerDto }).exec();
+      await this.playerModel
+        .findByIdAndUpdate(id, {
+          updatePlayerDto,
+          category: updatePlayerDto.categoryId,
+        })
+        .exec();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
