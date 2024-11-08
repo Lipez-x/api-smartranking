@@ -114,19 +114,21 @@ export class ChallengeController {
   }
 
   @Get()
-  async findChallenges(
-    @Query('challengeId') challengeId: string,
-    @Query('playerId') playerId: string,
-  ) {
+  async findChallenges(@Query('id') id: string) {
+    return this.clientChallenges.send('get-challenges', id ? id : '');
+  }
+
+  @Get('/player/:id')
+  async findPlayerChallenges(@Param('id') id: string) {
     const player = await this.clientAdminBackend
-      .send('get-players', playerId)
+      .send('get-players', id)
       .toPromise();
 
     if (!player) {
       throw new NotFoundException('This player is not found');
     }
 
-    return this.clientChallenges.send('get-challenges', id ? id : '');
+    return this.clientChallenges.send('get-player-challenges', id);
   }
 
   @Put('/:id')

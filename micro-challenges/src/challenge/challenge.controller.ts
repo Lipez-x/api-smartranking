@@ -41,22 +41,28 @@ export class ChallengeController {
   }
 
   @MessagePattern('get-challenges')
-  async getChallenges(
-    data: { challengeId?: string; playerId?: string },
-    @Ctx() context: RmqContext,
-  ) {
-    const { challengeId, playerId } = data;
+  async getChallenges(@Payload() id: string, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
     try {
-      if (playerId) {
-        return this.challengeService.findPlayerChallenges(playerId);
-      } else if (challengeId) {
-        return this.challengeService.findChallengeById(challengeId);
+      if (id) {
+        return await this.challengeService.findPlayerChallenges(id);
       } else {
-        return this.challengeService.findAllChallenges();
+        return await this.challengeService.findAllChallenges();
       }
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
+
+  @MessagePattern('get-player-challenges')
+  async findPlayerChallenges(@Payload() id, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      return await this.challengeService.findPlayerChallenges(id);
     } finally {
       await channel.ack(originalMsg);
     }
