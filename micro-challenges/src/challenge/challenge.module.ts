@@ -7,7 +7,7 @@ import { ChallengeSchema } from './interfaces/challenge.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'challenges', schema: ChallengeSchema },
+      { name: 'Challenges', schema: ChallengeSchema },
     ]),
   ],
   controllers: [ChallengeController],
