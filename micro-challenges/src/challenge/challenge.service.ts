@@ -14,7 +14,7 @@ export class ChallengeService {
     private readonly challengeModel: Model<Challenge>,
   ) {}
 
-  private async createChallenge(@Body() challenge: Challenge) {
+  async createChallenge(@Body() challenge: Challenge) {
     try {
       const createdChallenge = new this.challengeModel(challenge);
       await createdChallenge.save();
@@ -24,7 +24,7 @@ export class ChallengeService {
     }
   }
 
-  private async findAllChallenges() {
+  async findAllChallenges() {
     try {
       const challenges = await this.challengeModel
         .find()
@@ -37,7 +37,7 @@ export class ChallengeService {
     }
   }
 
-  private async findPlayerChallenges(id: any) {
+  async findPlayerChallenges(id: any) {
     try {
       const playerChallenges = await this.challengeModel
         .find()
@@ -53,7 +53,7 @@ export class ChallengeService {
     }
   }
 
-  private async findChallengeById(id: string) {
+  async findChallengeById(id: string) {
     try {
       const challenge = await this.challengeModel.findById(id);
       return challenge;
@@ -63,10 +63,7 @@ export class ChallengeService {
     }
   }
 
-  private async updateChallenge({
-    id,
-    updateChallengeDto,
-  }: UpdateChallengePayload) {
+  async updateChallenge({ id, updateChallengeDto }: UpdateChallengePayload) {
     try {
       await this.challengeModel.findByIdAndUpdate(id, updateChallengeDto);
     } catch (error) {
@@ -75,7 +72,7 @@ export class ChallengeService {
     }
   }
 
-  private async deleteChallenge(id: string) {
+  async deleteChallenge(id: string) {
     try {
       await this.challengeModel.findByIdAndDelete(id);
     } catch (error) {

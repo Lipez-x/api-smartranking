@@ -35,11 +35,11 @@ export class ChallengeController {
     }
 
     const existsPlayerOne = await this.clientAdminBackend
-      .send('get-players', playerOne.id)
+      .send('get-players', playerOne)
       .toPromise();
 
     const existsPlayerTwo = await this.clientAdminBackend
-      .send('get-players', playerTwo.id)
+      .send('get-players', playerTwo)
       .toPromise();
 
     if (!existsPlayerOne || !existsPlayerTwo) {
@@ -54,7 +54,7 @@ export class ChallengeController {
       throw new BadRequestException('Player two is not part of this category');
     }
 
-    if (applicant.id !== playerOne.id && applicant.id !== playerTwo.id) {
+    if (applicant !== playerOne && applicant !== playerTwo) {
       throw new BadRequestException(
         'The applicant needs to be part of the challenge',
       );
