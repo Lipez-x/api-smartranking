@@ -2,7 +2,7 @@ import { IsArray, IsNotEmpty } from 'class-validator';
 import { Player } from 'src/player/interfaces/player.interface';
 import { Result } from '../interfaces/match.interface';
 
-export class AssignChallengeMatch {
+export class AssignChallengeMatchDto {
   @IsNotEmpty()
   def: Player;
 
