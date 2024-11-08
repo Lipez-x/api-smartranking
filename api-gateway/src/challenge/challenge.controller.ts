@@ -114,9 +114,12 @@ export class ChallengeController {
   }
 
   @Get()
-  async findChallenges(@Query('id') id: string) {
+  async findChallenges(
+    @Query('challengeId') challengeId: string,
+    @Query('playerId') playerId: string,
+  ) {
     const player = await this.clientAdminBackend
-      .send('get-players', id)
+      .send('get-players', playerId)
       .toPromise();
 
     if (!player) {

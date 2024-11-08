@@ -1,6 +1,12 @@
 import { Controller, Logger } from '@nestjs/common';
 import { ChallengeService } from './challenge.service';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { Challenge } from './interfaces/challenge.interface';
 
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
@@ -31,6 +37,28 @@ export class ChallengeController {
       if (filterAckError) {
         await channel.ack(originalMsg);
       }
+    }
+  }
+
+  @MessagePattern('get-challenges')
+  async getChallenges(
+    data: { challengeId?: string; playerId?: string },
+    @Ctx() context: RmqContext,
+  ) {
+    const { challengeId, playerId } = data;
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      if (playerId) {
+        return this.challengeService.findPlayerChallenges(playerId);
+      } else if (challengeId) {
+        return this.challengeService.findChallengeById(challengeId);
+      } else {
+        return this.challengeService.findAllChallenges();
+      }
+    } finally {
+      await channel.ack(originalMsg);
     }
   }
 }
