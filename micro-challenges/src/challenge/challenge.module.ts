@@ -3,12 +3,11 @@ import { ChallengeController } from './challenge.controller';
 import { ChallengeService } from './challenge.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChallengeSchema } from './interfaces/challenge.schema';
-import { Model } from 'mongoose';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'challenges', schema: ChallengeSchema },
+      { name: 'Challenges', schema: ChallengeSchema },
     ]),
   ],
   controllers: [ChallengeController],

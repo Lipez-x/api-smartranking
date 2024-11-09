@@ -11,7 +11,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [`amqp://${RMQ_USER}:${RMQ_PASSWORD}@${ADDRESS}/smartranking`],
-      noAcks: false,
+      noAck: false,
       queue: 'challenges',
     },
   });

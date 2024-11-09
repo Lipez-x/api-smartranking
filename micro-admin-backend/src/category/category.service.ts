@@ -8,7 +8,7 @@ import { Category } from './interfaces/category.interface';
 @Injectable()
 export class CategoryService {
   constructor(
-    @InjectModel('Category') private readonly categoryModel: Model<Category>,
+    @InjectModel('Categories') private readonly categoryModel: Model<Category>,
   ) {}
 
   private readonly logger = new Logger(AppService.name);

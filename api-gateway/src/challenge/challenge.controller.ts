@@ -121,7 +121,7 @@ export class ChallengeController {
   @Get('/player/:id')
   async findPlayerChallenges(@Param('id') id: string) {
     const player = await this.clientAdminBackend
-      .send('get-players', id)
+      .send('get-players-challenges', id)
       .toPromise();
 
     if (!player) {
@@ -139,6 +139,8 @@ export class ChallengeController {
     const challenge = await this.clientChallenges
       .send('get-challenges', id)
       .toPromise();
+
+    console.log(challenge);
 
     if (!challenge) {
       throw new NotFoundException('This challenge is not found');

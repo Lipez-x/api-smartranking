@@ -47,7 +47,7 @@ export class ChallengeController {
 
     try {
       if (id) {
-        return await this.challengeService.findPlayerChallenges(id);
+        return await this.challengeService.findChallengeById(id);
       } else {
         return await this.challengeService.findAllChallenges();
       }
