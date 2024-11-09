@@ -79,10 +79,28 @@ export class ChallengeController {
   ) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
-    const { id, updateChallengeDto } = updateChallengePayload;
 
     try {
       await this.challengeService.updateChallenge(updateChallengePayload);
+    } catch (error) {
+      this.logger.error(error.message);
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
+    }
+  }
+
+  @EventPattern('delete-challenge')
+  async deleteChallenge(@Payload() id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.challengeService.deleteChallenge(id);
     } catch (error) {
       this.logger.error(error.message);
       const filterAckError = ackErrors.filter((ackError) =>
