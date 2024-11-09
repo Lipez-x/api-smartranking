@@ -9,6 +9,8 @@ import {
   Post,
   Put,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
@@ -96,12 +98,14 @@ export class ChallengeController {
   }
 
   @Post()
+  @UsePipes(ValidationPipe)
   async createChallenge(@Body() createChallengeDto: CreateChallengeDto) {
     await this.challengeValidate(createChallengeDto);
     this.clientChallenges.emit('create-challenge', createChallengeDto);
   }
 
   @Post('/:id/match')
+  @UsePipes(ValidationPipe)
   async assignMatchToChallenge(
     @Body() assignChallengeMatchDto: AssignChallengeMatchDto,
     @Param('id') id: string,
@@ -132,6 +136,7 @@ export class ChallengeController {
   }
 
   @Put('/:id')
+  @UsePipes(ValidationPipe)
   async updateChallenge(
     @Body() updateChallengeDto: UpdateChallengeDto,
     @Param('id') id: string,
