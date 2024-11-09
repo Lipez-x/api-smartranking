@@ -9,6 +9,7 @@ import {
 } from '@nestjs/microservices';
 import { Challenge } from './interfaces/challenge.interface';
 import { UpdateChallengePayload } from './interfaces/update-challenge.payload';
+import { AssignChallengeMatchPayload } from './interfaces/assign-challenge-match.payload';
 
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
 
@@ -28,6 +29,31 @@ export class ChallengeController {
 
     try {
       await this.challengeService.createChallenge(challenge);
+      await channel.ack(originalMsg);
+    } catch (error) {
+      this.logger.error(error.message);
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError) {
+        await channel.ack(originalMsg);
+      }
+    }
+  }
+
+  @EventPattern('assign-challenge-match')
+  async assignMatchToChallenge(
+    @Payload() assignMatchChallengePayload: AssignChallengeMatchPayload,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.challengeService.assignMatchToChallenge(
+        assignMatchChallengePayload,
+      );
       await channel.ack(originalMsg);
     } catch (error) {
       this.logger.error(error.message);

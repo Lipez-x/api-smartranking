@@ -111,7 +111,7 @@ export class ChallengeController {
     @Param('id') id: string,
   ) {
     await this.assignChallengeMatchValidate(id, assignChallengeMatchDto);
-    this.clientChallenges.emit('assign-challenge-match', {
+    this.clientChallenges.emit('create-match', {
       id,
       assignChallengeMatchDto,
     });
@@ -144,8 +144,6 @@ export class ChallengeController {
     const challenge = await this.clientChallenges
       .send('get-challenges', id)
       .toPromise();
-
-    console.log(challenge);
 
     if (!challenge) {
       throw new NotFoundException('This challenge is not found');

@@ -5,6 +5,7 @@ import { Challenge } from './interfaces/challenge.interface';
 import { RpcException } from '@nestjs/microservices';
 import { UpdateChallengePayload } from './interfaces/update-challenge.payload';
 import { ChallengeStatus } from './enums/challenge-status.enum';
+import { AssignChallengeMatchPayload } from './interfaces/assign-challenge-match.payload';
 
 @Injectable()
 export class ChallengeService {
@@ -15,11 +16,26 @@ export class ChallengeService {
     private readonly challengeModel: Model<Challenge>,
   ) {}
 
-  async createChallenge(@Body() challenge: Challenge) {
+  async createChallenge(challenge: Challenge) {
     try {
       const createdChallenge = new this.challengeModel(challenge);
       createdChallenge.status = ChallengeStatus.PENDING;
       await createdChallenge.save();
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new RpcException(error.message);
+    }
+  }
+
+  async assignMatchToChallenge({
+    matchId,
+    challengeId,
+  }: AssignChallengeMatchPayload) {
+    try {
+      const challenge = await this.findChallengeById(challengeId);
+
+      challenge.match.push(matchId);
+      await this.challengeModel.findByIdAndUpdate(challengeId, challenge);
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
@@ -54,7 +70,6 @@ export class ChallengeService {
   async findChallengeById(id: string) {
     try {
       const challenge = await this.challengeModel.findById(id);
-      console.log(challenge);
 
       return challenge;
     } catch (error) {
