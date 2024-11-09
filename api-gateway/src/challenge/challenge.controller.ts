@@ -121,7 +121,7 @@ export class ChallengeController {
   @Get('/player/:id')
   async findPlayerChallenges(@Param('id') id: string) {
     const player = await this.clientAdminBackend
-      .send('get-players-challenges', id)
+      .send('get-players', id)
       .toPromise();
 
     if (!player) {

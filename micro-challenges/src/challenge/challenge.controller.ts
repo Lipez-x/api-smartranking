@@ -57,7 +57,10 @@ export class ChallengeController {
   }
 
   @MessagePattern('get-player-challenges')
-  async findPlayerChallenges(@Payload() id, @Ctx() context: RmqContext) {
+  async findPlayerChallenges(
+    @Payload() id: string,
+    @Ctx() context: RmqContext,
+  ) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
