@@ -17,7 +17,21 @@ export class Proxyrmq {
     },
   });
 
+  private clientRankings = ClientProxyFactory.create({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@${this.ADDRESS}/smartranking`,
+      ],
+      queue: 'rankings',
+    },
+  });
+
   public get getClientChallenges() {
     return this.clientChallenges;
+  }
+
+  public get getClientRankings() {
+    return this.clientRankings;
   }
 }

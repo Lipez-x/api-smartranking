@@ -17,14 +17,13 @@ export class MatchService {
 
   private clientProxy = new Proxyrmq();
   private clientChallenges = this.clientProxy.getClientChallenges;
+  private clientRankings = this.clientProxy.getClientRankings;
 
   constructor(
     @InjectModel('Matches') private readonly matchModel: Model<Match>,
   ) {}
 
   async createMatch({ id, match }: CreateMatchPayload) {
-    console.log(match);
-
     try {
       const createdMatch = new this.matchModel(match);
       await createdMatch.save();
@@ -35,10 +34,17 @@ export class MatchService {
         .send('get-challenges', id)
         .toPromise();
 
-      return this.clientChallenges
+      this.clientChallenges
         .emit('assign-challenge-match', {
           matchId,
           challengeId: challenge._id,
+        })
+        .toPromise();
+
+      return await this.clientRankings
+        .emit('process-match', {
+          matchId: matchId,
+          match: match,
         })
         .toPromise();
     } catch (error) {
