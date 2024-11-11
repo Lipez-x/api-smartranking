@@ -32,9 +32,11 @@ export class MatchService {
     @InjectModel('Matches') private readonly matchModel: Model<Match>,
   ) {}
 
-  async createMatch({ id, assignChallengeMatchDto }: CreateMatchPayload) {
+  async createMatch({ id, match }: CreateMatchPayload) {
+    console.log(match);
+
     try {
-      const createdMatch = new this.matchModel(assignChallengeMatchDto);
+      const createdMatch = new this.matchModel(match);
       await createdMatch.save();
 
       const matchId = createdMatch.id;

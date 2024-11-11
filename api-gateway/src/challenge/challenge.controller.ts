@@ -17,6 +17,7 @@ import { CreateChallengeDto } from './dtos/create-challenge.dto';
 import { UpdateChallengeDto } from './dtos/update-challenge.dto';
 import { ChallengeStatus } from './enums/challenge-status.enum';
 import { AssignChallengeMatchDto } from './dtos/assign-challenge-match.dto';
+import { Match } from './interfaces/match.interface';
 
 @Controller('api/v1/challenge')
 export class ChallengeController {
@@ -66,7 +67,7 @@ export class ChallengeController {
   async assignChallengeMatchValidate(
     id: string,
     assignChallengeMatchDto: AssignChallengeMatchDto,
-  ) {
+  ): Promise<Match> {
     const challenge = await this.clientChallenges
       .send('get-challenges', id)
       .toPromise();
@@ -95,6 +96,16 @@ export class ChallengeController {
         'The winning player is not part of the challenge',
       );
     }
+
+    const match: Match = {
+      category: challenge.category,
+      challenge: id,
+      players: challenge.players,
+      def: assignChallengeMatchDto.def,
+      result: assignChallengeMatchDto.result,
+    };
+
+    return match;
   }
 
   @Post()
@@ -110,10 +121,14 @@ export class ChallengeController {
     @Body() assignChallengeMatchDto: AssignChallengeMatchDto,
     @Param('id') id: string,
   ) {
-    await this.assignChallengeMatchValidate(id, assignChallengeMatchDto);
-    this.clientChallenges.emit('create-match', {
+    const match = await this.assignChallengeMatchValidate(
       id,
       assignChallengeMatchDto,
+    );
+
+    this.clientChallenges.emit('create-match', {
+      id,
+      match,
     });
   }
 
