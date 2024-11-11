@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { Proxyrmq } from './proxyrmq';
 
-@Module({})
+@Module({
+  providers: [Proxyrmq],
+})
 export class ProxyrmqModule {}

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export const MatchSchema = new mongoose.Schema(
   {
-    category: { type: String },
+    category: { type: mongoose.Schema.ObjectId },
     challenge: { type: mongoose.Schema.ObjectId },
     players: [
       {

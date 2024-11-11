@@ -9,24 +9,14 @@ import {
   Transport,
 } from '@nestjs/microservices';
 import { CreateMatchPayload } from './interfaces/create-match.payload';
+import { Proxyrmq } from 'src/proxyrmq/proxyrmq';
 
 @Injectable()
 export class MatchService {
   private logger = new Logger(MatchService.name);
 
-  private RMQ_USER = process.env.RMQ_USER;
-  private RMQ_PASSWORD = process.env.RMQ_PASSWORD;
-  private ADDRESS = process.env.ADDRESS;
-
-  private clientChallenges = ClientProxyFactory.create({
-    transport: Transport.RMQ,
-    options: {
-      urls: [
-        `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@${this.ADDRESS}/smartranking`,
-      ],
-      queue: 'challenges',
-    },
-  });
+  private clientProxy = new Proxyrmq();
+  private clientChallenges = this.clientProxy.getClientChallenges;
 
   constructor(
     @InjectModel('Matches') private readonly matchModel: Model<Match>,
