@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Transport } from '@nestjs/microservices';
+import * as moment from 'moment-timezone';
 
 const RMQ_USER = process.env.RMQ_USER;
 const RMQ_PASSWORD = process.env.RMQ_PASSWORD;
@@ -15,6 +16,12 @@ async function bootstrap() {
       queue: 'challenges',
     },
   });
+
+  Date.prototype.toJSON = function (): any {
+    return moment(this)
+      .tz('America/Sao_Paulo')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
+  };
 
   await app.listen();
 }

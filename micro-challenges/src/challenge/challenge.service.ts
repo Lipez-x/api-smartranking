@@ -6,6 +6,7 @@ import { RpcException } from '@nestjs/microservices';
 import { UpdateChallengePayload } from './interfaces/update-challenge.payload';
 import { ChallengeStatus } from './enums/challenge-status.enum';
 import { AssignChallengeMatchPayload } from './interfaces/assign-challenge-match.payload';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class ChallengeService {
@@ -74,6 +75,45 @@ export class ChallengeService {
       return challenge;
     } catch (error) {
       this.logger.error(error.message);
+      throw new RpcException(error.message);
+    }
+  }
+
+  async findCompletedChallenges(categoryId: string): Promise<Challenge[]> {
+    try {
+      return await this.challengeModel
+        .find()
+        .where('category')
+        .equals(categoryId)
+        .where('status')
+        .equals(ChallengeStatus.COMPLETED)
+        .exec();
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error.message)}`);
+      throw new RpcException(error.message);
+    }
+  }
+
+  async findCompletedChallengesByDate(
+    categoryId: string,
+    refDate: string,
+  ): Promise<Challenge[]> {
+    try {
+      const dataRefNew = `${refDate} 23:59:59.999`;
+
+      return await this.challengeModel
+        .find()
+        .where('category')
+        .equals(categoryId)
+        .where('status')
+        .equals(ChallengeStatus.COMPLETED)
+        .where('dateTimeChallenge')
+        .lte(
+          moment(dataRefNew).tz('UTC').format('YYYY-MM-DD HH:mm:ss.SSS+00:00'),
+        )
+        .exec();
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error.message)}`);
       throw new RpcException(error.message);
     }
   }

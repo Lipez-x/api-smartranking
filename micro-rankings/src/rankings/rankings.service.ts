@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProcessMatchPayload } from './interfaces/process-match.payload';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { get, Model } from 'mongoose';
 import { Ranking } from './interfaces/ranking.schema';
 import { RpcException } from '@nestjs/microservices';
 import { Proxyrmq } from 'src/proxyrmq/proxyrmq';
 import { Category } from './interfaces/category.interface';
 import { EventName } from './enums/event-name.enum';
+import { GetRankingsPayload } from './interfaces/get-rankings.payload';
+import * as moment from 'moment-timezone';
+import { Challenge } from './interfaces/challenge.interface';
+import * as _ from 'lodash';
 
 @Injectable()
 export class RankingsService {
@@ -16,6 +20,7 @@ export class RankingsService {
   private logger = new Logger(RankingsService.name);
   private proxyRmq = new Proxyrmq();
   private clientAdminBackend = this.proxyRmq.getClientAdminBackend;
+  private clientChallenges = this.proxyRmq.getClientChallenges;
 
   async processMatch({ matchId, match }: ProcessMatchPayload) {
     try {
@@ -55,6 +60,47 @@ export class RankingsService {
           await ranking.save();
         }),
       );
+    } catch (error) {
+      this.logger.error(error);
+      throw new RpcException(error.message);
+    }
+  }
+
+  async getRankings(getRankingsPayload: GetRankingsPayload) {
+    try {
+      if (!getRankingsPayload.refDate) {
+        getRankingsPayload.refDate = moment()
+          .tz('America/Sao_Paulo')
+          .format('YYYY-MM-DD');
+      }
+
+      const { categoryId, refDate } = getRankingsPayload;
+
+      console.log(refDate);
+
+      const rankingRecord = await this.rankingModel
+        .find()
+        .where('category')
+        .equals(categoryId)
+        .exec();
+
+      const challenges: Challenge[] = await this.clientChallenges
+        .send('get-completed-challenges', {
+          categoryId: categoryId,
+          refDate: refDate,
+        })
+        .toPromise();
+
+      _.remove(rankingRecord, function (item) {
+        return (
+          challenges.filter((challenge) => challenge.id == item.challenge)
+            .length == 0
+        );
+      });
+
+      this.logger.log(`record: ${JSON.stringify(rankingRecord)}`);
+
+      return;
     } catch (error) {
       this.logger.error(error);
       throw new RpcException(error.message);

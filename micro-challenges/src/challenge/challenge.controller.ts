@@ -10,7 +10,7 @@ import {
 import { Challenge } from './interfaces/challenge.interface';
 import { UpdateChallengePayload } from './interfaces/update-challenge.payload';
 import { AssignChallengeMatchPayload } from './interfaces/assign-challenge-match.payload';
-
+import { GetCompletedChallengePayload } from './interfaces/get-completed-challenge.payload';
 const ackErrors: string[] = ['E11000', 'Cast to ObjectId'];
 
 @Controller('challenge')
@@ -93,6 +93,29 @@ export class ChallengeController {
 
     try {
       return await this.challengeService.findPlayerChallenges(id);
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
+
+  @MessagePattern('get-completed-challenges')
+  async getCompletedChallenge(
+    @Payload() getCompletedChallengePayload: GetCompletedChallengePayload,
+    @Ctx() context: RmqContext,
+  ): Promise<Challenge[] | Challenge> {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      const { categoryId, refDate } = getCompletedChallengePayload;
+      this.logger.log(`data: ${JSON.stringify(getCompletedChallengePayload)}`);
+      if (refDate) {
+        return await this.challengeService.findCompletedChallengesByDate(
+          categoryId,
+          refDate,
+        );
+      } else {
+        return await this.challengeService.findCompletedChallenges(categoryId);
+      }
     } finally {
       await channel.ack(originalMsg);
     }
