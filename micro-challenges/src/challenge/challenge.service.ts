@@ -46,6 +46,8 @@ export class ChallengeService {
   async findAllChallenges() {
     try {
       const challenges = await this.challengeModel.find().exec();
+      console.log(challenges);
+
       return challenges;
     } catch (error) {
       this.logger.error(error.message);
@@ -99,18 +101,15 @@ export class ChallengeService {
     refDate: string,
   ): Promise<Challenge[]> {
     try {
-      const dataRefNew = `${refDate} 23:59:59.999`;
+      const formattedDate = moment(refDate).toDate();
 
       return await this.challengeModel
         .find()
         .where('category')
         .equals(categoryId)
         .where('status')
-        .equals(ChallengeStatus.COMPLETED)
-        .where('dateTimeChallenge')
-        .lte(
-          moment(dataRefNew).tz('UTC').format('YYYY-MM-DD HH:mm:ss.SSS+00:00'),
-        )
+        .equals(ChallengeStatus.ACCEPTED)
+        .lte('dateTimeChallenge', formattedDate)
         .exec();
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`);

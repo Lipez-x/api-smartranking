@@ -1,7 +1,7 @@
 import { ChallengeStatus } from '../enums/challenge-status.enum';
 
 export interface Challenge {
-  id: string;
+  _id: string;
   dateTimeChallenge: Date;
   status: ChallengeStatus;
   requestDateTime: Date;

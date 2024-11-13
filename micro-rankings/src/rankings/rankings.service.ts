@@ -76,8 +76,6 @@ export class RankingsService {
 
       const { categoryId, refDate } = getRankingsPayload;
 
-      console.log(refDate);
-
       const rankingRecord = await this.rankingModel
         .find()
         .where('category')
@@ -93,14 +91,14 @@ export class RankingsService {
 
       _.remove(rankingRecord, function (item) {
         return (
-          challenges.filter((challenge) => challenge.id == item.challenge)
+          challenges.filter((challenge) => challenge._id == item.challenge)
             .length == 0
         );
       });
 
       this.logger.log(`record: ${JSON.stringify(rankingRecord)}`);
 
-      return;
+      return rankingRecord;
     } catch (error) {
       this.logger.error(error);
       throw new RpcException(error.message);
