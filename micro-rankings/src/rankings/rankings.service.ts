@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProcessMatchPayload } from './interfaces/process-match.payload';
 import { InjectModel } from '@nestjs/mongoose';
-import { get, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Ranking } from './interfaces/ranking.schema';
 import { RpcException } from '@nestjs/microservices';
 import { Proxyrmq } from 'src/proxyrmq/proxyrmq';
@@ -11,6 +11,10 @@ import { GetRankingsPayload } from './interfaces/get-rankings.payload';
 import * as moment from 'moment-timezone';
 import { Challenge } from './interfaces/challenge.interface';
 import * as _ from 'lodash';
+import {
+  History,
+  RankingResponse,
+} from './interfaces/ranking-response.interface';
 
 @Injectable()
 export class RankingsService {
@@ -98,7 +102,38 @@ export class RankingsService {
 
       this.logger.log(`record: ${JSON.stringify(rankingRecord)}`);
 
-      return rankingRecord;
+      const result = _(rankingRecord)
+        .groupBy('player')
+        .map((items, key) => ({
+          player: key,
+          history: _.countBy(items, 'event'),
+          points: _.sumBy(items, 'points'),
+        }))
+        .value();
+
+      this.logger.log(`Result: ${JSON.stringify(result)}`);
+
+      const orderResult = _.orderBy(result, 'points', 'desc');
+
+      const ranking: RankingResponse[] = [];
+
+      orderResult.map(function (item, index) {
+        const rankingResponse: RankingResponse = {};
+
+        rankingResponse.player = item.player;
+        rankingResponse.position = index + 1;
+        rankingResponse.score = item.points;
+
+        const history: History = {};
+
+        history.victories = item.history.WIN ? item.history.WIN : 0;
+        history.defeats = item.history.LOSE ? item.history.LOSE : 0;
+        rankingResponse.matchHistory = history;
+
+        ranking.push(rankingResponse);
+      });
+
+      return ranking;
     } catch (error) {
       this.logger.error(error);
       throw new RpcException(error.message);
