@@ -27,11 +27,25 @@ export class Proxyrmq {
     },
   });
 
+  private clientNotifications = ClientProxyFactory.create({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        `amqp://${this.RMQ_USER}:${this.RMQ_PASSWORD}@${this.ADDRESS}/smartranking`,
+      ],
+      queue: 'notifications',
+    },
+  });
+
   public get getClientChallenges() {
     return this.clientChallenges;
   }
 
   public get getClientRankings() {
     return this.clientRankings;
+  }
+
+  public get getClientNotifications() {
+    return this.clientNotifications;
   }
 }

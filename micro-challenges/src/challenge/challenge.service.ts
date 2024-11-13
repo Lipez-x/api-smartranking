@@ -7,10 +7,13 @@ import { UpdateChallengePayload } from './interfaces/update-challenge.payload';
 import { ChallengeStatus } from './enums/challenge-status.enum';
 import { AssignChallengeMatchPayload } from './interfaces/assign-challenge-match.payload';
 import * as moment from 'moment-timezone';
+import { Proxyrmq } from 'src/proxyrmq/proxyrmq';
 
 @Injectable()
 export class ChallengeService {
   private logger = new Logger(ChallengeService.name);
+  private proxyrmq = new Proxyrmq();
+  private clientNotifications = this.proxyrmq.getClientNotifications;
 
   constructor(
     @InjectModel('Challenges')
@@ -20,8 +23,15 @@ export class ChallengeService {
   async createChallenge(challenge: Challenge) {
     try {
       const createdChallenge = new this.challengeModel(challenge);
+
+      createdChallenge.dateTimeChallenge = new Date();
       createdChallenge.status = ChallengeStatus.PENDING;
+
       await createdChallenge.save();
+
+      await this.clientNotifications
+        .emit('new-challenge-notification', challenge)
+        .toPromise();
     } catch (error) {
       this.logger.error(error.message);
       throw new RpcException(error.message);
