@@ -101,7 +101,7 @@ export class ChallengeService {
     refDate: string,
   ): Promise<Challenge[]> {
     try {
-      const formattedDate = moment(refDate).toDate();
+      const formattedDate = moment(`${refDate} 23:59:59.999`).toDate();
 
       return await this.challengeModel
         .find()
