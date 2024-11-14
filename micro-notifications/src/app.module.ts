@@ -7,22 +7,22 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MailerModule.forRoot({
       transport: {
-        host: 'email-smtp.us-east-2.amazonaws.com',
-        port: 587,
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
         secure: false,
         tls: {
           ciphers: 'SSLv3',
         },
         auth: {
-          user: 'AKIAZQ3DTWHIXTHFYQLC',
-          pass: 'BNcQtskNTLuXAwSjvN+CpOmi/RWBWKv6EtEtDDGBy1Bj',
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
         },
       },
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
     }),
     ProxyrmqModule,
   ],
