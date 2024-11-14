@@ -1,10 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -12,107 +10,19 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
 import { CreateChallengeDto } from './dtos/create-challenge.dto';
 import { UpdateChallengeDto } from './dtos/update-challenge.dto';
-import { ChallengeStatus } from './enums/challenge-status.enum';
 import { AssignChallengeMatchDto } from './dtos/assign-challenge-match.dto';
-import { Match } from './interfaces/match.interface';
+import { ChallengeService } from './challenge.service';
 
 @Controller('api/v1/challenge')
 export class ChallengeController {
-  private clientProxyProvider = new ClientProxyProvider();
-  private clientChallenges = this.clientProxyProvider.getClientChallenges;
-  private clientAdminBackend = this.clientProxyProvider.getClientAdminBackEnd;
-
-  async challengeValidate(createChallengeDto: CreateChallengeDto) {
-    const { applicant, category, players } = createChallengeDto;
-    const [playerOne, playerTwo] = players;
-
-    const categoryExists = await this.clientAdminBackend
-      .send('find-categories', category)
-      .toPromise();
-
-    if (!categoryExists) {
-      throw new BadRequestException('This is not valid category');
-    }
-
-    const existsPlayerOne = await this.clientAdminBackend
-      .send('get-players', playerOne)
-      .toPromise();
-
-    const existsPlayerTwo = await this.clientAdminBackend
-      .send('get-players', playerTwo)
-      .toPromise();
-
-    if (!existsPlayerOne || !existsPlayerTwo) {
-      throw new BadRequestException('Player not found');
-    }
-
-    if (existsPlayerOne.category !== category) {
-      throw new BadRequestException('Player one is not part of this category');
-    }
-
-    if (existsPlayerTwo.category !== category) {
-      throw new BadRequestException('Player two is not part of this category');
-    }
-
-    if (applicant !== playerOne && applicant !== playerTwo) {
-      throw new BadRequestException(
-        'The applicant needs to be part of the challenge',
-      );
-    }
-  }
-
-  async assignChallengeMatchValidate(
-    id: string,
-    assignChallengeMatchDto: AssignChallengeMatchDto,
-  ): Promise<Match> {
-    const challenge = await this.clientChallenges
-      .send('get-challenges', id)
-      .toPromise();
-
-    if (!challenge) {
-      throw new NotFoundException('This challenge is not found');
-    }
-
-    if (challenge.status === ChallengeStatus.COMPLETED) {
-      throw new BadRequestException(
-        'This challenge has already been completed',
-      );
-    }
-
-    if (challenge.status !== ChallengeStatus.ACCEPTED) {
-      throw new BadRequestException('This challenge has not yet been accepted');
-    }
-
-    const [playerOne, playerTwo] = challenge.players;
-
-    if (
-      assignChallengeMatchDto.def !== playerOne &&
-      assignChallengeMatchDto.def !== playerTwo
-    ) {
-      throw new BadRequestException(
-        'The winning player is not part of the challenge',
-      );
-    }
-
-    const match: Match = {
-      category: challenge.category,
-      challenge: id,
-      players: challenge.players,
-      def: assignChallengeMatchDto.def,
-      result: assignChallengeMatchDto.result,
-    };
-
-    return match;
-  }
+  constructor(private readonly challengeService: ChallengeService) {}
 
   @Post()
   @UsePipes(ValidationPipe)
   async createChallenge(@Body() createChallengeDto: CreateChallengeDto) {
-    await this.challengeValidate(createChallengeDto);
-    this.clientChallenges.emit('create-challenge', createChallengeDto);
+    await this.challengeService.createChallenge(createChallengeDto);
   }
 
   @Post('/:id/match')
@@ -121,33 +31,17 @@ export class ChallengeController {
     @Body() assignChallengeMatchDto: AssignChallengeMatchDto,
     @Param('id') id: string,
   ) {
-    const match = await this.assignChallengeMatchValidate(
-      id,
-      assignChallengeMatchDto,
-    );
-
-    this.clientChallenges.emit('create-match', {
-      id,
-      match,
-    });
+    this.challengeService.assignMatchToChallenge(id, assignChallengeMatchDto);
   }
 
   @Get()
   async findChallenges(@Query('id') id: string) {
-    return this.clientChallenges.send('get-challenges', id ? id : '');
+    return this.challengeService.findChallenges(id);
   }
 
   @Get('/player/:id')
   async findPlayerChallenges(@Param('id') id: string) {
-    const player = await this.clientAdminBackend
-      .send('get-players', id)
-      .toPromise();
-
-    if (!player) {
-      throw new NotFoundException('This player is not found');
-    }
-
-    return this.clientChallenges.send('get-player-challenges', id);
+    return this.challengeService.findPlayerChallenges(id);
   }
 
   @Put('/:id')
@@ -156,31 +50,11 @@ export class ChallengeController {
     @Body() updateChallengeDto: UpdateChallengeDto,
     @Param('id') id: string,
   ) {
-    const challenge = await this.clientChallenges
-      .send('get-challenges', id)
-      .toPromise();
-
-    if (!challenge) {
-      throw new NotFoundException('This challenge is not found');
-    }
-
-    if (challenge.status !== ChallengeStatus.PENDING) {
-      throw new BadRequestException('This challenge is not pending');
-    }
-
-    this.clientChallenges.emit('update-challenge', { id, updateChallengeDto });
+    await this.challengeService.updateChallenge(id, updateChallengeDto);
   }
 
   @Delete('/:id')
   async deleteChallenge(@Param('id') id: string) {
-    const challenge = await this.clientChallenges
-      .send('get-challenges', id)
-      .toPromise();
-
-    if (!challenge) {
-      throw new NotFoundException('This challenge is not found');
-    }
-
-    this.clientChallenges.emit('delete-challenge', id);
+    await this.challengeService.deleteChallenge(id);
   }
 }

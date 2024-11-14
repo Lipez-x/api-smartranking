@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Logger,
   Param,
   Post,
   Put,
@@ -11,27 +10,22 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { AppController } from 'src/app.controller';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
-import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
+import { CategoryService } from './category.service';
 
 @Controller('api/v1/categories')
 export class CategoryController {
-  private logger = new Logger(AppController.name);
-
-  private clientProxy = new ClientProxyProvider();
-  private clientAdminBackend = this.clientProxy.getClientAdminBackEnd;
-
+  constructor(private readonly categoryService: CategoryService) {}
   @Post()
   @UsePipes(ValidationPipe)
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    this.clientAdminBackend.emit('create-category', createCategoryDto);
+    this.categoryService.createCategory(createCategoryDto);
   }
 
   @Get()
-  findCategories(@Query('id') id: string): Observable<any> {
-    return this.clientAdminBackend.send('find-categories', id ? id : '');
+  async findCategories(@Query('id') id: string) {
+    return await this.categoryService.findCategories(id);
   }
 
   @Put('/:id')
@@ -40,9 +34,6 @@ export class CategoryController {
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    this.clientAdminBackend.emit('update-categories', {
-      id,
-      updateCategoryDto,
-    });
+    this.categoryService.updateCategories(id, updateCategoryDto);
   }
 }
