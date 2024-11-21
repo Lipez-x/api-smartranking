@@ -8,6 +8,7 @@ import { ClientProxyModule } from './client-proxy/client-proxy.module';
 import { AwsModule } from './aws/aws.module';
 import { ChallengeModule } from './challenge/challenge.module';
 import { RankingsModule } from './rankings/rankings.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RankingsModule } from './rankings/rankings.module';
     AwsModule,
     ChallengeModule,
     RankingsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [ClientProxyProvider],
