@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -19,6 +20,7 @@ import { Observable } from 'rxjs';
 import { CategoryValidationPipe } from 'src/common/pipes/category-validation.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PlayerService } from './player.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('api/v1/players')
 export class PlayerController {
@@ -36,6 +38,7 @@ export class PlayerController {
     return await this.playerService.uploadImage(file, id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async getPlayers(@Query('id') id: string): Promise<any> {
     return this.playerService.getPlayers(id);
