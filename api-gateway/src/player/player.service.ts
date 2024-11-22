@@ -3,11 +3,11 @@ import { Observable } from 'rxjs';
 import { ClientProxyProvider } from 'src/client-proxy/client-proxy';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
-import { AwsService } from 'src/aws/aws.service';
+import { AwsS3Service } from 'src/aws/aws-s3.service';
 
 @Injectable()
 export class PlayerService {
-  constructor(private awsService: AwsService) {}
+  constructor(private awsS3Service: AwsS3Service) {}
 
   private clientProxy = new ClientProxyProvider();
   private clientAdminBackend = this.clientProxy.getClientAdminBackEnd;
@@ -25,7 +25,7 @@ export class PlayerService {
       throw new BadRequestException('Player not found');
     }
 
-    const urlImagePlayer = await this.awsService.uploadFile(file, id);
+    const urlImagePlayer = await this.awsS3Service.uploadFile(file, id);
 
     const updatePlayerDto: UpdatePlayerDto = {};
     updatePlayerDto.urlImagePlayer = urlImagePlayer.url;

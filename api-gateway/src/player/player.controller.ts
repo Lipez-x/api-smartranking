@@ -16,7 +16,6 @@ import {
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { ObjectIdValidationPipe } from 'src/common/pipes/object-id-validation.pipe';
 import { UpdatePlayerDto } from './dtos/update-player.dto';
-import { Observable } from 'rxjs';
 import { CategoryValidationPipe } from 'src/common/pipes/category-validation.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PlayerService } from './player.service';
