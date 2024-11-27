@@ -63,7 +63,10 @@ export class AwsCognitoService {
     return new Promise((resolve, reject) => {
       userCognito.authenticateUser(authenticationDetails, {
         onSuccess: (result) => {
-          resolve(result);
+          resolve({
+            accessToken: result.getAccessToken().getJwtToken(),
+            refreshToken: result.getRefreshToken().getToken(),
+          });
         },
         onFailure: (err) => {
           reject(err);
