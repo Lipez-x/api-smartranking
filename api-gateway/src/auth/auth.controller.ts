@@ -8,6 +8,7 @@ import {
 import { AuthRegisterUserDto } from './dtos/auth-register-user';
 import { AwsCognitoService } from 'src/aws/aws-cognito.service';
 import { AuthLoginUserDto } from './dtos/auth-login-user.dto';
+import { ChangePasswordDto } from './dtos/auth-change-password.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -23,5 +24,18 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async login(@Body() authLoginUserDto: AuthLoginUserDto) {
     return await this.awsCognitoService.authUser(authLoginUserDto);
+  }
+
+  @Post('/change-password')
+  @UsePipes(ValidationPipe)
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    const result =
+      await this.awsCognitoService.changeUserPassword(changePasswordDto);
+
+    if (result == 'SUCCESS') {
+      return {
+        status: 'success',
+      };
+    }
   }
 }

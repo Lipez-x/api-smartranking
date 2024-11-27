@@ -8,7 +8,7 @@ import {
 import { AuthRegisterUserDto } from 'src/auth/dtos/auth-register-user';
 import { AwsCognitoConfig } from './aws-cognito.config';
 import { AuthLoginUserDto } from 'src/auth/dtos/auth-login-user.dto';
-
+import { ChangePasswordDto } from 'src/auth/dtos/auth-change-password.dto';
 @Injectable()
 export class AwsCognitoService {
   private userPool: CognitoUserPool;
@@ -67,6 +67,43 @@ export class AwsCognitoService {
             accessToken: result.getAccessToken().getJwtToken(),
             refreshToken: result.getRefreshToken().getToken(),
           });
+        },
+        onFailure: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
+  async changeUserPassword(changePasswordDto: ChangePasswordDto) {
+    const { email, currentPassword, newPassword } = changePasswordDto;
+
+    const userData = {
+      Username: email,
+      Pool: this.userPool,
+    };
+
+    const authenticationDetails = new AuthenticationDetails({
+      Username: email,
+      Password: currentPassword,
+    });
+
+    const cognitoUser = new CognitoUser(userData);
+
+    return new Promise((resolve, reject) => {
+      cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: () => {
+          cognitoUser.changePassword(
+            currentPassword,
+            newPassword,
+            (err, result) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              resolve(result);
+            },
+          );
         },
         onFailure: (err) => {
           reject(err);
