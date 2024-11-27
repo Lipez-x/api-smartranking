@@ -9,6 +9,8 @@ import { AuthRegisterUserDto } from 'src/auth/dtos/auth-register-user';
 import { AwsCognitoConfig } from './aws-cognito.config';
 import { AuthLoginUserDto } from 'src/auth/dtos/auth-login-user.dto';
 import { ChangePasswordDto } from 'src/auth/dtos/auth-change-password.dto';
+import { AuthForgotPasswordDto } from 'src/auth/dtos/auth-forgot-password.dto';
+import { AuthConfirmPasswordDto } from 'src/auth/dtos/auth-confirm-password.dto';
 @Injectable()
 export class AwsCognitoService {
   private userPool: CognitoUserPool;
@@ -104,6 +106,52 @@ export class AwsCognitoService {
               resolve(result);
             },
           );
+        },
+        onFailure: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
+  async forgotUserPassword(authForgotPasswordDto: AuthForgotPasswordDto) {
+    const { email } = authForgotPasswordDto;
+
+    const userData = {
+      Username: email,
+      Pool: this.userPool,
+    };
+
+    const cognitoUser = new CognitoUser(userData);
+
+    return new Promise((resolve, reject) => {
+      cognitoUser.forgotPassword({
+        onSuccess: (result) => {
+          resolve(result);
+        },
+        onFailure: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
+  async confirmUserPassword(authConfirmPasswordDto: AuthConfirmPasswordDto) {
+    const { email, confirmationCode, newPassword } = authConfirmPasswordDto;
+
+    const userData = {
+      Username: email,
+      Pool: this.userPool,
+    };
+
+    const cognitoUser = new CognitoUser(userData);
+
+    return new Promise((resolve, reject) => {
+      cognitoUser.confirmPassword(confirmationCode, newPassword, {
+        onSuccess: () => {
+          resolve({
+            status: 'success',
+          });
         },
         onFailure: (err) => {
           reject(err);
